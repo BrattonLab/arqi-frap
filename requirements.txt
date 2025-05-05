@@ -1,1 +1,26 @@
-Curve Fitting Toolbox
+MATLAB toolboxes required:
+- Curve Fitting Toolbox
+
+Third party tools required and included in the directory 'auxiliary files'. Distributed by permission with licenses included:
+
+- uipickfiles 
++ https://www.mathworks.com/matlabcentral/fileexchange/10867-uipickfiles-uigetfile-on-steroids
++ version >= 1.15 
++ Copyright 2007, Douglas M. Schwarz
+
+- bpass 
++ Copyright 1997, by John C. Crocker and David G. Grier)
+
+- findisolatedpixels
++ Copyright 2013, Peter Kovesi
+
+- findendsjunctions
++ Copyright 2006-2013, Peter Kovesi
+
+- filledgegaps
++ Copyright 2013, Peter Kovesi
+
+- circularstruct
++ Copyright 2000, Peter Kovesi
+
+
