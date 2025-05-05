@@ -1,5 +1,7 @@
-function res = bpass(image_array,lnoise,lobject,threshold)
-% 
+function res = bpass(image_array,lnoise,lobject,threshold, isForcedDouble)
+% Implements a real-space bandpass filter that suppresses pixel noise and long-wavelength image variations while retaining information of a characteristic size.
+%
+%
 % NAME:
 %               bpass
 % PURPOSE:
@@ -80,17 +82,34 @@ function res = bpass(image_array,lnoise,lobject,threshold)
 %               bpass(image_array,1,19) on a 1024 x 1024 image; this
 %               version takes roughly half that. JWM 6/07
 %
+%               20100710 BPB. Refactored for speed and updated matlab algorthms, 
+%               no longer faster to separate dimensions of kernels.
+%
+%               20100712 BPB. Added single/double switch. It is not yet an
+%               optional keyword that can be anywhere, it may only come as
+%               the fifth option.
+%
 %       This code 'bpass.pro' is copyright 1997, John C. Crocker and 
 %       David G. Grier.  It should be considered 'freeware'- and may be
 %       distributed freely in its original form when properly attributed.  
 
+
 if nargin < 3, lobject = false; end
 if nargin < 4, threshold = 0; end
+if nargin < 5, isForcedDouble = true; end
 
 normalize = @(x) x/sum(x);
 
-image_array = double(image_array);
+if isForcedDouble
+    image_array = double(image_array);
+else
+    imageType = class(image_array);
+    if not(strcmp(imageType,{'single','double'}))
+    image_array = single(image_array);
+    end
+end
 
+    
 if lnoise == 0
   gaussian_kernel = 1;
 else      
@@ -122,16 +141,28 @@ end
 % convolving with a row vector, so instead of transposing the kernel, the
 % image is transposed twice.
 
-gconv = conv2(image_array',gaussian_kernel','same');
-gconv = conv2(gconv',gaussian_kernel','same');
+% gconv = conv2(image_array',gaussian_kernel','same');
+% gconv = conv2(gconv',gaussian_kernel','same');
+% 
+% if lobject
+%   bconv = conv2(image_array',boxcar_kernel','same');
+%   bconv = conv2(bconv',boxcar_kernel','same');
+% 
+%   filtered = gconv - bconv;
+% else
+%   filtered = gconv;
+% end
 
+% BPB 20100712: version of kernels listed as JWM above as slow but updates 
+% in internal matlab make this version as fast or faster than previous.
+% Tested on Matlab 2010a, ver 7.10.0.499
+
+gconv = conv2(gaussian_kernel',gaussian_kernel,image_array,'same');
 if lobject
-  bconv = conv2(image_array',boxcar_kernel','same');
-  bconv = conv2(bconv',boxcar_kernel','same');
-
-  filtered = gconv - bconv;
+    bconv = conv2(boxcar_kernel', boxcar_kernel,image_array,'same');
+    filtered = gconv - bconv;
 else
-  filtered = gconv;
+    filtered = gconv;
 end
 
 % Zero out the values on the edges to signal that they're not useful.     
@@ -146,10 +177,13 @@ filtered(:,(end - lzero + 1):end) = 0;
 % nonlinear operation which could potentially mess up our expectations
 % about statistics.  Is there data on 'Now centroid gets subpixel accuracy
 % much more robustly'?  To choose which approach to take, uncomment one of
-% the following two lines.
+% the following two approaches.
 % ERD: The negative values shift the peak if the center of the cntrd mask
 % is not centered on the particle.
 
+% % Approach A
 % res = filtered;
+
+% % Approach B
 filtered(filtered < threshold) = 0;
 res = filtered;
