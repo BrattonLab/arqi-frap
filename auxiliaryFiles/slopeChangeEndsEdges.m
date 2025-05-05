@@ -1,5 +1,5 @@
 
-function [leftEnd,rightEnd] = testtesttest(imageArray,figureHandle,frameOfInterest);
+function [leftEnd,rightEnd] = slopeChangeEndsEdges(imageArray,figureHandle,frameOfInterest);
 % detect changes in slope for ends of cylindrical region
 
 %% general parameters
